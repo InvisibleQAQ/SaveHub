@@ -71,9 +71,8 @@ export default function FeedListColumn({
   return (
     <div
       ref={middleColumnRef}
-      className={`${
-        isMiddleColumnVisible ? "w-64" : "w-0"
-      } border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden transition-all duration-300 ease-in-out`}
+      className={`${isMiddleColumnVisible ? "w-64" : "w-0"
+        } border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden transition-all duration-300 ease-in-out`}
       onMouseEnter={handleMiddleColumnMouseEnter}
       onMouseLeave={handleMiddleColumnMouseLeave}
     >
@@ -142,7 +141,7 @@ export default function FeedListColumn({
           {lists.map((list) => (
             <div key={list.id} className="mb-1">
               {/* List Header */}
-              <div className="flex items-center">
+              <div className="flex items-center group">
                 {editingListId === list.id ? (
                   <ListEditForm
                     editInputRef={editInputRef}
