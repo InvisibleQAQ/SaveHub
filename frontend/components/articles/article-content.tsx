@@ -1,5 +1,3 @@
-"use client"
-
 import { formatDistanceToNow } from "date-fns"
 import type { Article } from "@/lib/types"
 
@@ -21,14 +19,16 @@ export default function ArticleContent({ article }: ArticleContentProps) {
     <div className="max-w-4xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">{article.title}</h1>
 
-      <div className="flex items-center space-x-2 text-sm text-slate-500 mb-2">
+      <div className="flex items-center space-x-2 text-sm text-slate-500 mb-6">
         {article.author && <span>{article.author}</span>}
         {article.author && <span>•</span>}
         <span>{formattedDate()}</span>
       </div>
 
+      {/* Tag section will be inserted by the parent component between these sections */}
+
       {article.image && (
-        <div className="mb-6">
+        <div className="mb-6 mt-6">
           <img
             src={article.image || "/placeholder.svg"}
             alt=""

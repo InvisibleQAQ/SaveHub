@@ -63,7 +63,7 @@ export default function ArticleTagSection({
   }, [editingTagId])
 
   return (
-    <div className="mb-6 bg-muted/30 p-3 rounded-lg border">
+    <div className="mb-6 mt-2 bg-muted/30 p-3 rounded-lg border">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center">
           <Tag className="h-4 w-4 mr-2 text-slate-500" />

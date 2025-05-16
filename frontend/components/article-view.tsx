@@ -6,8 +6,8 @@ import { useToast } from "@/hooks/use-toast"
 import type { Article, ArticleTag } from "@/lib/types"
 import ArticleHeader from "./articles/article-header"
 import ArticleTagSection from "./articles/article-tag-section"
-import ArticleContent from "./articles/article-content"
 import TagDeleteDialog from "./articles/tag-delete-dialog"
+import { formatDistanceToNow } from "date-fns"
 
 interface ArticleViewProps {
   article: Article
@@ -256,7 +256,24 @@ export default function ArticleView({ article, onUpdateArticle }: ArticleViewPro
       {/* Article Content */}
       <ScrollArea className="flex-1">
         <div className="max-w-4xl mx-auto p-6">
-          {/* Tags section with integrated management */}
+          {/* Article Title and Metadata */}
+          <h1 className="text-2xl font-bold mb-4">{articleWithTags.title}</h1>
+
+          <div className="flex items-center space-x-2 text-sm text-slate-500 mb-6">
+            {articleWithTags.author && <span>{articleWithTags.author}</span>}
+            {articleWithTags.author && <span>•</span>}
+            <span>
+              {(() => {
+                try {
+                  return formatDistanceToNow(new Date(articleWithTags.publishDate), { addSuffix: true })
+                } catch (e) {
+                  return "Recently"
+                }
+              })()}
+            </span>
+          </div>
+
+          {/* Tags section with integrated management - now positioned between title and content */}
           <ArticleTagSection
             tagsToDisplay={tagsToDisplay}
             existingTags={existingTags}
@@ -278,7 +295,25 @@ export default function ArticleView({ article, onUpdateArticle }: ArticleViewPro
             colorOptions={colorOptions}
           />
 
-          <ArticleContent article={articleWithTags} />
+          {/* Article Image */}
+          {articleWithTags.image && (
+            <div className="mb-6 mt-6">
+              <img
+                src={articleWithTags.image || "/placeholder.svg"}
+                alt=""
+                className="w-full h-auto rounded-lg object-cover max-h-[500px]"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none"
+                }}
+              />
+            </div>
+          )}
+
+          {/* Article Content */}
+          <div
+            className="prose dark:prose-invert max-w-none"
+            dangerouslySetInnerHTML={{ __html: articleWithTags.content }}
+          />
         </div>
       </ScrollArea>
 
