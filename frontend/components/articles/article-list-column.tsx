@@ -26,6 +26,8 @@ interface ArticleListColumnProps {
   getCurrentList: () => FeedList | undefined
   handleUpdate: () => void
   isUpdating: boolean
+  markArticleAsRead: (articleId: string) => void
+  markAllAsRead: () => void // Add this line
 }
 
 export default function ArticleListColumn({
@@ -45,6 +47,8 @@ export default function ArticleListColumn({
   getCurrentList,
   handleUpdate,
   isUpdating,
+  markArticleAsRead,
+  markAllAsRead, // Add this line
 }: ArticleListColumnProps) {
   return (
     <div className="w-96 border-r border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-900">
@@ -59,6 +63,7 @@ export default function ArticleListColumn({
               onBackClick={backToListView}
               onUpdateClick={handleUpdate}
               isUpdating={isUpdating}
+              onMarkAllAsRead={markAllAsRead} // Add this line
             />
           ) : selectedFeed ? (
             <ArticleListHeader
@@ -66,6 +71,7 @@ export default function ArticleListColumn({
               showBackButton={false}
               onUpdateClick={handleUpdate}
               isUpdating={isUpdating}
+              onMarkAllAsRead={markAllAsRead} // Add this line
             />
           ) : (
             <h2 className="font-semibold text-lg truncate w-full">All Articles</h2>
@@ -102,7 +108,10 @@ export default function ArticleListColumn({
                     key={article.id}
                     article={article}
                     isSelected={selectedArticle?.id === article.id}
-                    onClick={() => setSelectedArticle(article)}
+                    onClick={() => {
+                      markArticleAsRead(article.id)
+                      setSelectedArticle(article)
+                    }}
                     favicon={feedFavicons[article.feedId] || ""}
                   />
                 ))
@@ -121,7 +130,10 @@ export default function ArticleListColumn({
                   key={article.id}
                   article={article}
                   isSelected={selectedArticle?.id === article.id}
-                  onClick={() => setSelectedArticle(article)}
+                  onClick={() => {
+                    markArticleAsRead(article.id)
+                    setSelectedArticle(article)
+                  }}
                 />
               ))}
           </div>

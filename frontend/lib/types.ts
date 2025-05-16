@@ -42,54 +42,55 @@ export type FolderIcon =
   | "bookmark-check"
   | "layers"
   | "layers-2"
-  | "layers-3"
+  | "layers-3";
 
 export interface Feed {
-  id: string
-  title: string
-  url: string
-  count: number
-  lastUpdated: string
-  listId?: string
-  siteUrl?: string
+  id: string;
+  title: string;
+  url: string;
+  count: number;
+  lastUpdated: string;
+  listId?: string;
+  siteUrl?: string;
 }
 
 export interface FeedList {
-  id: string
-  name: string
-  count: number
-  expanded: boolean
-  feeds?: Feed[]
-  color?: string
-  icon?: FolderIcon
+  id: string;
+  name: string;
+  count: number;
+  expanded: boolean;
+  feeds?: Feed[];
+  color?: string;
+  icon?: FolderIcon;
 }
 
 export interface FeedFolder {
-  id: string
-  name: string
-  count: number
-  expanded: boolean
-  feeds?: Feed[]
-  color?: string
-  icon?: FolderIcon
+  id: string;
+  name: string;
+  count: number;
+  expanded: boolean;
+  feeds?: Feed[];
+  color?: string;
+  icon?: FolderIcon;
 }
 
 export interface ArticleTag {
-  id: string
-  tag_name: string
-  tag_color: string
-  article_id: string
-  attachedAt: string
+  id: string;
+  tag_name: string;
+  tag_color: string;
+  article_id: string;
+  attachedAt: string;
 }
 
 export interface Article {
-  id: string
-  title: string
-  content: string
-  link: string
-  publishDate: string
-  image: string
-  author: string
-  feedTitle: string
-  tags?: ArticleTag[]
+  id: string;
+  title: string;
+  content: string;
+  link: string;
+  publishDate: string;
+  image: string;
+  author: string;
+  feedTitle: string;
+  tags?: ArticleTag[];
+  isRead: boolean;
 }

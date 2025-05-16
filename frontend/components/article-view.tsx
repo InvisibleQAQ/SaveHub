@@ -12,9 +12,10 @@ import { formatDistanceToNow } from "date-fns"
 interface ArticleViewProps {
   article: Article
   onUpdateArticle?: (updatedArticle: Article) => void
+  markArticleAsRead?: (articleId: string) => void // Add this prop
 }
 
-export default function ArticleView({ article, onUpdateArticle }: ArticleViewProps) {
+export default function ArticleView({ article, onUpdateArticle, markArticleAsRead }: ArticleViewProps) {
   const [existingTags, setExistingTags] = useState<ArticleTag[]>([])
   const [articleWithTags, setArticleWithTags] = useState<Article>(article)
   const [newTagName, setNewTagName] = useState("")
@@ -57,6 +58,13 @@ export default function ArticleView({ article, onUpdateArticle }: ArticleViewPro
       }
     }
   }, [])
+
+  // Mark article as read when viewed
+  useEffect(() => {
+    if (article && !article.isRead && markArticleAsRead) {
+      markArticleAsRead(article.id)
+    }
+  }, [article, markArticleAsRead])
 
   // Handle opening the article in a new tab
   const openArticle = () => {

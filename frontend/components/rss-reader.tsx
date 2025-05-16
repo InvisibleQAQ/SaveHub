@@ -137,6 +137,8 @@ export default function RSSReader() {
             getCurrentList={rssState.getCurrentList}
             handleUpdate={rssState.handleUpdate}
             isUpdating={rssState.isUpdating}
+            markArticleAsRead={rssState.markArticleAsRead}
+            markAllAsRead={rssState.markAllAsRead}
           />
 
           {/* Article Content */}

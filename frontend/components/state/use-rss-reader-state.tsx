@@ -48,6 +48,8 @@ export function useRSSReaderState() {
   const [tags, setTags] = useState<ArticleTag[]>([])
   const [isUpdating, setIsUpdating] = useState(false)
   const { toast } = useToast()
+  // Add a new state for tracking read article IDs
+  const [readArticleIds, setReadArticleIds] = useState<Set<string>>(new Set())
 
   // Load feeds and lists from localStorage on initial load
   useEffect(() => {
@@ -185,6 +187,26 @@ export function useRSSReaderState() {
     }
   }, [darkMode])
 
+  // Load read article IDs from localStorage on initial load
+  useEffect(() => {
+    const savedReadArticleIds = localStorage.getItem("rss-read-articles")
+    if (savedReadArticleIds) {
+      try {
+        const parsedReadArticleIds = JSON.parse(savedReadArticleIds)
+        setReadArticleIds(new Set(parsedReadArticleIds))
+      } catch (e) {
+        console.error("Error parsing saved read article IDs", e)
+      }
+    }
+  }, [])
+
+  // Save read article IDs to localStorage when changed
+  useEffect(() => {
+    if (readArticleIds.size > 0) {
+      localStorage.setItem("rss-read-articles", JSON.stringify(Array.from(readArticleIds)))
+    }
+  }, [readArticleIds])
+
   // Fetch articles when a feed is selected
   useEffect(() => {
     if (selectedFeed) {
@@ -193,6 +215,7 @@ export function useRSSReaderState() {
     }
   }, [selectedFeed])
 
+  // Modify the fetchArticles function to check if articles have been read
   const fetchArticles = async (url: string) => {
     setIsLoading(true)
     try {
@@ -202,39 +225,45 @@ export function useRSSReaderState() {
       const data = await response.json()
       if (data && data.items) {
         const parsedArticles = data.items.map((item: any, index: number) => {
+          // Generate a stable ID for the article
+          const articleId = item.guid || item.id || `${url}-${item.title}-${item.pubDate || item.published || ""}`
+
+          // Check if this article has been read before
+          const isRead = readArticleIds.has(articleId)
+
           // Generate some sample tags for demonstration
           const sampleTags =
             index % 3 === 0
               ? [
+                {
+                  id: `tag-${Date.now()}-1`,
+                  tag_name: "Technology",
+                  tag_color: "#3b82f6",
+                  article_id: articleId,
+                  attachedAt: new Date().toISOString(),
+                },
+                {
+                  id: `tag-${Date.now()}-2`,
+                  tag_name: "News",
+                  tag_color: "#10b981",
+                  article_id: articleId,
+                  attachedAt: new Date().toISOString(),
+                },
+              ]
+              : index % 3 === 1
+                ? [
                   {
-                    id: `tag-${Date.now()}-1`,
-                    tag_name: "Technology",
-                    tag_color: "#3b82f6",
-                    article_id: item.guid || item.id || `article-${Date.now()}-${Math.random()}`,
-                    attachedAt: new Date().toISOString(),
-                  },
-                  {
-                    id: `tag-${Date.now()}-2`,
-                    tag_name: "News",
-                    tag_color: "#10b981",
-                    article_id: item.guid || item.id || `article-${Date.now()}-${Math.random()}`,
+                    id: `tag-${Date.now()}-3`,
+                    tag_name: "Important",
+                    tag_color: "#ef4444",
+                    article_id: articleId,
                     attachedAt: new Date().toISOString(),
                   },
                 ]
-              : index % 3 === 1
-                ? [
-                    {
-                      id: `tag-${Date.now()}-3`,
-                      tag_name: "Important",
-                      tag_color: "#ef4444",
-                      article_id: item.guid || item.id || `article-${Date.now()}-${Math.random()}`,
-                      attachedAt: new Date().toISOString(),
-                    },
-                  ]
                 : []
 
           return {
-            id: item.guid || item.id || `article-${Date.now()}-${Math.random()}`,
+            id: articleId,
             title: item.title || "Untitled",
             content: item.content || item.description || "",
             link: item.link || "",
@@ -244,6 +273,7 @@ export function useRSSReaderState() {
             feedTitle: data.title || selectedFeed?.title || "Unknown Feed",
             feedId: selectedFeed?.id || "",
             tags: sampleTags,
+            isRead: isRead,
           }
         })
         setArticles(parsedArticles)
@@ -269,6 +299,7 @@ export function useRSSReaderState() {
     }
   }
 
+  // Similarly modify the fetchListArticles function to check read status
   const fetchListArticles = async (listId: string) => {
     setIsFetchingListArticles(true)
     setViewingListArticles(true)
@@ -294,39 +325,46 @@ export function useRSSReaderState() {
           const data = await response.json()
           if (data && data.items) {
             const parsedArticles = data.items.map((item: any, index: number) => {
+              // Generate a stable ID for the article
+              const articleId =
+                item.guid || item.id || `${feed.url}-${item.title}-${item.pubDate || item.published || ""}`
+
+              // Check if this article has been read before
+              const isRead = readArticleIds.has(articleId)
+
               // Generate some sample tags for demonstration
               const sampleTags =
                 index % 3 === 0
                   ? [
+                    {
+                      id: `tag-${Date.now()}-1`,
+                      tag_name: "Technology",
+                      tag_color: "#3b82f6",
+                      article_id: articleId,
+                      attachedAt: new Date().toISOString(),
+                    },
+                    {
+                      id: `tag-${Date.now()}-2`,
+                      tag_name: "News",
+                      tag_color: "#10b981",
+                      article_id: articleId,
+                      attachedAt: new Date().toISOString(),
+                    },
+                  ]
+                  : index % 3 === 1
+                    ? [
                       {
-                        id: `tag-${Date.now()}-1`,
-                        tag_name: "Technology",
-                        tag_color: "#3b82f6",
-                        article_id: item.guid || item.id || `article-${Date.now()}-${Math.random()}`,
-                        attachedAt: new Date().toISOString(),
-                      },
-                      {
-                        id: `tag-${Date.now()}-2`,
-                        tag_name: "News",
-                        tag_color: "#10b981",
-                        article_id: item.guid || item.id || `article-${Date.now()}-${Math.random()}`,
+                        id: `tag-${Date.now()}-3`,
+                        tag_name: "Important",
+                        tag_color: "#ef4444",
+                        article_id: articleId,
                         attachedAt: new Date().toISOString(),
                       },
                     ]
-                  : index % 3 === 1
-                    ? [
-                        {
-                          id: `tag-${Date.now()}-3`,
-                          tag_name: "Important",
-                          tag_color: "#ef4444",
-                          article_id: item.guid || item.id || `article-${Date.now()}-${Math.random()}`,
-                          attachedAt: new Date().toISOString(),
-                        },
-                      ]
                     : []
 
               return {
-                id: item.guid || item.id || `article-${Date.now()}-${Math.random()}`,
+                id: articleId,
                 title: item.title || "Untitled",
                 content: item.content || item.description || "",
                 link: item.link || "",
@@ -336,6 +374,7 @@ export function useRSSReaderState() {
                 feedTitle: data.title || feed.title || "Unknown Feed",
                 feedId: feed.id,
                 tags: sampleTags,
+                isRead: isRead,
               }
             })
 
@@ -644,6 +683,68 @@ export function useRSSReaderState() {
     }
   }
 
+  // Update the markArticleAsRead function to persist read status
+  const markArticleAsRead = (articleId: string) => {
+    // Add to the set of read article IDs
+    setReadArticleIds((prev) => {
+      const newSet = new Set(prev)
+      newSet.add(articleId)
+      return newSet
+    })
+
+    // Update in the main articles array
+    setArticles((prev) => prev.map((article) => (article.id === articleId ? { ...article, isRead: true } : article)))
+
+    // Update in the list articles array
+    setListArticles((prev) =>
+      prev.map((article) => (article.id === articleId ? { ...article, isRead: true } : article)),
+    )
+
+    // Update the selected article if it's the one being marked as read
+    if (selectedArticle && selectedArticle.id === articleId) {
+      setSelectedArticle({ ...selectedArticle, isRead: true })
+    }
+  }
+
+  // Add a function to mark all articles as read
+  const markAllAsRead = () => {
+    // Get all article IDs from the current view
+    const articleIds = viewingListArticles
+      ? listArticles.map((article) => article.id)
+      : articles.map((article) => article.id)
+
+    // Add all to the set of read article IDs
+    setReadArticleIds((prev) => {
+      const newSet = new Set(prev)
+      articleIds.forEach((id) => newSet.add(id))
+      return newSet
+    })
+
+    // Update all articles in the current view
+    if (viewingListArticles) {
+      setListArticles((prev) => prev.map((article) => ({ ...article, isRead: true })))
+    } else {
+      setArticles((prev) => prev.map((article) => ({ ...article, isRead: true })))
+    }
+
+    // Update selected article if there is one
+    if (selectedArticle) {
+      setSelectedArticle({ ...selectedArticle, isRead: true })
+    }
+
+    // Show success toast
+    toast({
+      title: "Marked as Read",
+      description: "All articles have been marked as read",
+    })
+  }
+
+  // Add a function to check if an article is read
+  const isArticleRead = (articleId: string) => {
+    return readArticleIds.has(articleId)
+  }
+
+  // Include the new functions in the return object
   return {
     // State
     feeds,
@@ -665,6 +766,7 @@ export function useRSSReaderState() {
     isFetchingListArticles,
     tags,
     isUpdating,
+    readArticleIds,
 
     // Setters
     setSearchQuery,
@@ -692,5 +794,8 @@ export function useRSSReaderState() {
     handleUpdate,
     fetchArticles,
     fetchListArticles,
+    markArticleAsRead,
+    markAllAsRead,
+    isArticleRead,
   }
 }
