@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
-import { Feed, Article } from "./rss-types"
+import type { Feed } from "./rss-types"
 import { useUIState } from "./use-ui-state"
 import { useReadStatus } from "./use-read-status"
 import { useListsState } from "./use-lists-state"
@@ -12,12 +12,12 @@ import { loadFromStorage, saveToStorage, STORAGE_KEYS } from "./utils/local-stor
 
 export function useRSSReaderState() {
   const { toast } = useToast()
-  
+
   // 初始化各个子状态管理钩子
   const {
     darkMode,
     activeTab,
-    sidebarCollapsed, 
+    sidebarCollapsed,
     searchQuery,
     isLoading: uiLoading,
     isUpdating,
@@ -26,16 +26,11 @@ export function useRSSReaderState() {
     setSearchQuery,
     setIsLoading,
     setIsUpdating,
-    toggleDarkMode
+    toggleDarkMode,
   } = useUIState()
-  
-  const {
-    readArticleIds,
-    markArticleAsRead,
-    isArticleRead,
-    markAllAsRead
-  } = useReadStatus()
-  
+
+  const { readArticleIds, markArticleAsRead, isArticleRead, markAllAsRead } = useReadStatus()
+
   const {
     lists,
     selectedList,
@@ -52,9 +47,9 @@ export function useRSSReaderState() {
     updateListAppearance,
     updateListFeeds,
     addFeedToList,
-    getCurrentList
+    getCurrentList,
   } = useListsState()
-  
+
   const {
     feeds,
     selectedFeed,
@@ -65,9 +60,9 @@ export function useRSSReaderState() {
     deleteFeed,
     fetchFavicon,
     importFeeds: importFeedsBase,
-    getFeedsByListId
+    getFeedsByListId,
   } = useFeedsState()
-  
+
   const {
     articles,
     listArticles,
@@ -84,7 +79,7 @@ export function useRSSReaderState() {
     handleUpdateArticle,
     backToListView,
     getCurrentArticles,
-    setTags
+    setTags,
   } = useArticlesState(markArticleAsRead, isArticleRead)
 
   // 从本地存储加载标签
@@ -131,7 +126,7 @@ export function useRSSReaderState() {
 
   // 同步lists中的feeds和全局feeds
   useEffect(() => {
-    lists.forEach(list => {
+    lists.forEach((list) => {
       if (!list.feeds || list.feeds.length === 0) {
         const listFeeds = getFeedsByListId(list.id)
         if (listFeeds.length > 0) {
@@ -149,15 +144,15 @@ export function useRSSReaderState() {
 
   // 获取列表文章（扩展基础方法）
   const fetchListArticles = async (listId: string) => {
-    const list = lists.find(l => l.id === listId)
+    const list = lists.find((l) => l.id === listId)
     if (!list) return
-    
+
     setSelectedFeed(null)
     const listFeeds = list.feeds.length > 0 ? list.feeds : getFeedsByListId(listId)
     await fetchListArticlesBase(listId, listFeeds)
   }
 
-  // 添加订阅源（扩展基础方法）
+  // Modify the addFeed function to automatically fetch articles after adding a feed
   const addFeed = async (url: string, name: string, listId: string) => {
     if (!url) return
 
@@ -165,10 +160,13 @@ export function useRSSReaderState() {
     try {
       const newFeed = await addFeedBase(url, name, listId)
       if (newFeed) {
-        // 更新列表计数和列表中的订阅源
+        // Update list count and feeds in list
         addFeedToList(listId, newFeed)
         setSelectedFeed(newFeed)
         setSelectedList(listId)
+
+        // Automatically fetch articles for the newly added feed
+        await fetchArticlesBase(url, newFeed)
       }
       return newFeed
     } catch (error) {
@@ -228,12 +226,12 @@ export function useRSSReaderState() {
     }
   }
 
-  // 导入订阅源（扩展基础方法）
-  const handleImportFeeds = (importedFeeds: Feed[]) => {
-    // 导入订阅源
+  // Also update the handleImportFeeds function to fetch articles for the first imported feed
+  const handleImportFeeds = async (importedFeeds: Feed[]) => {
+    // Import feeds
     const addedFeeds = importFeedsBase(importedFeeds)
-    
-    // 将订阅源添加到对应的列表
+
+    // Group feeds by list
     const feedsByList: Record<string, Feed[]> = {}
     addedFeeds.forEach((feed) => {
       const listId = feed.listId || "newsfeed"
@@ -243,14 +241,24 @@ export function useRSSReaderState() {
       feedsByList[listId].push(feed)
     })
 
-    // 更新每个列表
+    // Update each list
     Object.entries(feedsByList).forEach(([listId, listFeeds]) => {
-      const list = lists.find(l => l.id === listId)
+      const list = lists.find((l) => l.id === listId)
       if (list) {
         const updatedFeeds = [...list.feeds, ...listFeeds]
         updateListFeeds(listId, updatedFeeds)
       }
     })
+
+    // If feeds were imported, fetch articles for the first one
+    if (addedFeeds.length > 0) {
+      const firstFeed = addedFeeds[0]
+      setSelectedFeed(firstFeed)
+      setSelectedList(firstFeed.listId || "newsfeed")
+
+      // Fetch articles for the first imported feed
+      await fetchArticlesBase(firstFeed.url, firstFeed)
+    }
   }
 
   // 将全局markAllAsRead方法与文章列表集成
@@ -315,6 +323,6 @@ export function useRSSReaderState() {
     markAllAsRead: markAllArticlesAsRead,
     isArticleRead,
     addTagToArticle,
-    removeTagFromArticle
+    removeTagFromArticle,
   }
 }

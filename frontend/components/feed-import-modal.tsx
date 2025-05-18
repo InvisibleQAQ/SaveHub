@@ -51,6 +51,7 @@ export default function FeedImportModal({ open, onOpenChange, lists, onImport }:
     }
   }
 
+  // Update the handleImport function to properly handle the async operation
   const handleImport = async () => {
     setIsLoading(true)
 
@@ -69,7 +70,7 @@ export default function FeedImportModal({ open, onOpenChange, lists, onImport }:
           lastUpdated: new Date().toISOString(),
         }))
 
-        onImport(feeds)
+        await onImport(feeds)
       } else if (importMethod === "opml" && opmlFile) {
         // Read OPML file
         const text = await opmlFile.text()
@@ -103,8 +104,11 @@ export default function FeedImportModal({ open, onOpenChange, lists, onImport }:
           }
         })
 
-        onImport(feeds)
+        await onImport(feeds)
       }
+
+      // Close the modal after successful import
+      onOpenChange(false)
     } catch (error) {
       console.error("Error importing feeds:", error)
       alert("Failed to import feeds. Please check your input and try again.")

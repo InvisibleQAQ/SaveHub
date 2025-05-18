@@ -75,6 +75,25 @@ export default function RSSReader() {
     }
   }, [rssState.activeTab])
 
+  // Update the handleImportFeeds function to properly handle the async operation
+  const handleImportFeeds = async (feeds: any) => {
+    try {
+      await rssState.handleImportFeeds(feeds)
+    } catch (error) {
+      console.error("Error importing feeds:", error)
+    }
+  }
+
+  // Update the addFeed function to properly handle the async operation
+  const addFeed = async (url: string, name: string, listId: string) => {
+    try {
+      await rssState.addFeed(url, name, listId)
+    } catch (error) {
+      console.error("Error adding feed:", error)
+      throw error
+    }
+  }
+
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50">
       {/* Main Sidebar */}
@@ -163,7 +182,7 @@ export default function RSSReader() {
         onOpenChange={setAddFeedOpen}
         lists={rssState.lists}
         isLoading={rssState.isLoading}
-        onAddFeed={rssState.addFeed}
+        onAddFeed={addFeed}
       />
 
       {/* Settings Dialog */}
@@ -179,7 +198,7 @@ export default function RSSReader() {
         open={importFeedOpen}
         onOpenChange={setImportFeedOpen}
         lists={rssState.lists}
-        onImport={rssState.handleImportFeeds}
+        onImport={handleImportFeeds}
       />
 
       {/* List Management Modal */}

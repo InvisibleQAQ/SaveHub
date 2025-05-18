@@ -19,6 +19,7 @@ export default function AddFeedDialog({ open, onOpenChange, lists, isLoading, on
   const [newFeedName, setNewFeedName] = useState("")
   const [newFeedList, setNewFeedList] = useState("newsfeed")
 
+  // Update the handleAddFeed function to properly handle the async operation
   const handleAddFeed = async () => {
     if (!newFeedUrl) return
 
